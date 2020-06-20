@@ -1,5 +1,4 @@
 ![docker](https://user-images.githubusercontent.com/45919758/85199435-7cd8e480-b2e7-11ea-892f-8c43f38578a7.png)
-Docker images
 
 **USING THE DOCKER REGISTRY**
 
