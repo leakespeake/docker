@@ -8,3 +8,4 @@ modules:
         - HTTP/2
       prober: http
       timeout: 5s
+      
