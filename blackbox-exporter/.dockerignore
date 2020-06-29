@@ -1,0 +1,5 @@
+# ignore the file(s) or directories that match the patterns specified, prior to sending build context to the docker daemon
+
+# exclude all markdown files except for README.md
+*.md
+!README.md
