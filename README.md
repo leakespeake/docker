@@ -104,7 +104,7 @@ rm -rf /var/lib/apt/lists/* /tmp/*
 ```
 Include a **.dockerignore** file in the build directory to exclude files not relevant to the build.
 
-Use **ENV** to make the code more flexible and less DRY. The following example is for NGINX and uses **SED** to replace the **ENV** environment variables;
+Use **ENV** to make the code more flexible and less DRY. The following NGINX example uses **SED** to replace the **ENV** environment variables;
 
 **DOCKERFILE**
 
