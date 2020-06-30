@@ -51,6 +51,36 @@ xxx
 ___
 **DOCKERFILE BEST PRACTISES**
 
+Run the container as a non-root user to prevent malicious code from gaining permissions in the container host;
+
+```
+RUN groupadd -g 1000 nonroot && \
+    useradd -d /home/barry -u 1000 -g 1000 -m -s /bin/bash barry && \
+```
+Then state the new **USER** towards the end of the Dockerfile, after all commands that required root permissions;
+
+```
+USER barry
+ENTRYPOINT  [ "/bin/blackbox_exporter" ]
+CMD         [ "--config.file=/etc/blackbox_exporter/config.yml" ]
+```
+Unless using the "scratch" image, use official DockerHub images wherever possible. Also source and use a specific version, stating in the tag;
+
+```
+FROM centos:7.8.2003
+```
+Add as much **LABEL** metadata as you like to give as much info about the container as possible;
+
+```
+LABEL maintainer="Tim Burr <tim.burr@trees.com>"
+```
+Use **ADD** as opposed to **COPY** when you will need to unzip the resulting file (and use **COPY** for a literal copy operation);
+
+```
+ADD "https://github.com/prometheus/blackbox_exporter/releases/download/v${BLACKBOX_VERSION}/blackbox_exporter-${BLACKBOX_VERSION}.linux-amd64.tar.gz" /tmp/blackbox_exporter.tgz
+```
+
+
 
 
 
