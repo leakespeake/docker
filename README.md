@@ -86,7 +86,7 @@ Add a **HEALTHCHECK** so we have a health status of "starting", "healthy" or "un
 ```
 HEALTHCHECK CMD curl --fail http://localhost:9115 || exit 1
 ```
-Only the instructions **RUN COPY ADD** create layers so group these commands together into their own blocks using "&& \" at the end of each line bar the last.
+Only the instructions **RUN COPY ADD** create layers so group these commands together into their own blocks.
 
 Cleanup at the end of the **RUN** block to reduce image size;
 
@@ -104,9 +104,27 @@ rm -rf /var/lib/apt/lists/* /tmp/*
 ```
 Include a **.dockerignore** file in the build directory to exclude files not relevant to the build.
 
-Use **ENV** to make the code more flexible and less DRY
+Use **ENV** to make the code more flexible and less DRY. The following example is for NGINX and uses **SED** to replace the **ENV** environment variables;
 
+**DOCKERFILE**
 
+```
+ENV NGINX_WORKER_PROCESSES 1
+ENV NGINX_WORKER_CONNECTIONS 1024
+```
+**ENTRYPOINT**
+
+```
+NGINX_CONFFILE=/etc/nginx/nginx.conf
+sed -i -e "s/%NGINX_WORKER_PROCESSES%/${NGINX_WORKER_PROCESSES}/g" ${NGINX_CONFFILE}
+sed -i -e "s/%NGINX_WORKER_CONNECTIONS%/${NGINX_WORKER_CONNECTIONS}/g" ${NGINX_CONFFILE}
+```
+**NGINX.CONF**
+
+```
+worker_processes %NGINX_WORKER_PROCESSES%;
+worker_connections %NGINX_WORKER_CONNECTIONS%;
+```
 
 
 
