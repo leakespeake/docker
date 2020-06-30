@@ -64,7 +64,7 @@ USER barry
 ENTRYPOINT  [ "/bin/blackbox_exporter" ]
 CMD         [ "--config.file=/etc/blackbox_exporter/config.yml" ]
 ```
-Unless using the "scratch" image, use official DockerHub images wherever possible. Also source and use a specific version, stating in the tag;
+Unless using the "scratch" image, use official DockerHub images when possible. Also source and use a specific version (not "latest"), stating in the tag;
 
 ```
 FROM centos:7.8.2003
@@ -73,12 +73,40 @@ Add as much **LABEL** metadata as you like to give as much info about the contai
 
 ```
 LABEL maintainer="Tim Burr <tim.burr@trees.com>"
+LABEL com.leakespeake.version="0.0.1-beta"
+LABEL com.leakespeake.release-date="2020-06-30"
 ```
 Use **ADD** as opposed to **COPY** when you will need to unzip the resulting file (and use **COPY** for a literal copy operation);
 
 ```
 ADD "https://github.com/prometheus/blackbox_exporter/releases/download/v${BLACKBOX_VERSION}/blackbox_exporter-${BLACKBOX_VERSION}.linux-amd64.tar.gz" /tmp/blackbox_exporter.tgz
 ```
+Add a **HEALTHCHECK** so we have a health status of "starting", "healthy" or "unhealthy" rather than just seeing "up" at **docker ps**;
+
+```
+HEALTHCHECK CMD curl --fail http://localhost:9115 || exit 1
+```
+Only the instructions **RUN COPY ADD** create layers so group these commands together into their own blocks using "&& \" at the end of each line bar the last.
+
+Cleanup at the end of the **RUN** block to reduce image size;
+
+**CENTOS**
+
+```
+yum clean all && \
+rm -rf /tmp/*
+```
+**UBUNTU**
+
+```
+apt-get clean && \
+rm -rf /var/lib/apt/lists/* /tmp/*
+```
+Include a **.dockerignore** file in the build directory to exclude files not relevant to the build.
+
+Use **ENV** to make the code more flexible and less DRY
+
+
 
 
 
