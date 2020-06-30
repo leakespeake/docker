@@ -64,6 +64,11 @@ USER barry
 ENTRYPOINT  [ "/bin/blackbox_exporter" ]
 CMD         [ "--config.file=/etc/blackbox_exporter/config.yml" ]
 ```
+The applications should redirect their logs to STDOUT/STDERR streams so the host can collect them;
+
+```
+RUN ln -sf /dev/stdout /var/log/docker-app.log
+```
 Unless using the "scratch" image, use official DockerHub images when possible. Also source and use a specific version (not "latest"), stating in the tag;
 
 ```
@@ -125,8 +130,17 @@ sed -i -e "s/%NGINX_WORKER_CONNECTIONS%/${NGINX_WORKER_CONNECTIONS}/g" ${NGINX_C
 worker_processes %NGINX_WORKER_PROCESSES%;
 worker_connections %NGINX_WORKER_CONNECTIONS%;
 ```
+We can also use **ENV** to set commonly used version numbers so that version bumps are easier to maintain - consider the following;
 
+```
+ENV BLACKBOX_VERSION 0.17.0
+ADD "https://github.com/prometheus/blackbox_exporter/releases/download/v${BLACKBOX_VERSION}/blackbox_exporter-${BLACKBOX_VERSION}.linux-amd64.tar.gz" /tmp/blackbox_exporter.tgz
+cp /tmp/blackbox_exporter-${BLACKBOX_VERSION}.linux-amd64/blackbox_exporter /bin
+```
+Lastly, its not essential, but we can redirect STOUT to file /home/barry/log.out then redirect STDERR to STDOUT (inc in the RUN block);
 
-
-
-
+```
+exec 3>&1 4>&2 && \
+trap 'exec 2>&4 1>&3' 0 1 2 3 && \
+exec 1>/home/barry/log.out 2>&1 && \
+```
