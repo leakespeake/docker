@@ -42,13 +42,15 @@ docker pull leakespeake78/docker:blackbox-exporter-0.17.0
 ___
 **USING THE DOCKERHUB PRIVATE REGISTRY**
 
-This example shows the Packer post-processor code with the **leakespeake78** Docker ID and **packer** private repository.
+This example uses the X image with the **leakespeake78** Docker ID and **X** private repository.
+
+The syntax is similar to that of a public one. First, we must prefix our image with the host running our private registry instead of our username. 
 
 xxx
 
-Another method is to manually push to our private repository (the syntax is similar to that of a public one). 
-
-First, we must prefix our image with the host running our private registry instead of our username. 
-
-xxx
 ___
+**DOCKERFILE BEST PRACTISES**
+
+
+
+
