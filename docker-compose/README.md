@@ -6,7 +6,7 @@ Docker Compose is a tool that allows you to run multi-container application envi
 
 - **version** - tell Docker Compose which configuration version we’re using
 - **services** - states each service that makes up the app - each image, port, environment variable, restart behaviour etc
-- **volumes** - creates a shared volume between the host machine and the container in order for data to persist between container restarts
+- **volumes** - creates a shared volume between the host (inside **/var/lib/docker/volume**) and the container (example - host-db-data:**/var/lib/mysql**)- for data to persist between container restarts
 
 Ideally bake Docker Compose into your Packer template (to compliment Docker CE) or otherwise install via;
 ```
@@ -47,6 +47,11 @@ We spin up the application with the single **docker-compose up** command. This d
 ```
 docker-compose -p phpIPAM up -d
 ```
+If we need to amend a container config in docker-compose.yml (or add an additional one), we can do so then re-run this command. Docker Compose will detect which containers are up-to-date and which require creating or re-creating. We can also remove a current container entirely and build a new one via;
+
+```
+docker-compose down && sudo docker-compose -p phpIPAM up -d
+```
 
 ---
 
@@ -58,6 +63,7 @@ docker logs {CONTAINER}
 docker exec -it {CONTAINER} /bin/sh
 docker exec -it {CONTAINER} /bin/ash
 docker exec -it {CONTAINER} /bin/bash
+docker volume ls
 ```
 
 ---
