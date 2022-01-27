@@ -27,6 +27,23 @@ services:
     depends_on:
       - phpipam-mariadb
 
+  phpipam-mysql-backup:
+    image: databack/mysql-backup:latest
+    environment:
+      - DB_SERVER=phpipam-mariadb
+      - DB_PORT=3306
+      - DB_USER=phpipam
+      - DB_PASS=${IPAM_DATABASE_PASS}
+      - DB_NAMES=phpipam
+      - DB_DUMP_TARGET=smb://ubuntu:REDACTED@NAS/backups /db
+      - DB_DUMP_CRON=0 0 * * 0
+    user: "0"
+    restart: unless-stopped
+    volumes:
+      - phpipam-db-backups:/db
+    depends_on:
+      - phpipam-mariadb
+
   phpipam-mariadb:
     image: mariadb:latest
     environment:
@@ -38,3 +55,4 @@ services:
 volumes:
   phpipam-db-data:
   phpipam-logo:
+  phpipam-db-backups:
