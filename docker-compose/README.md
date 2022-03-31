@@ -47,23 +47,39 @@ We spin up the application with the single **docker-compose up** command. This d
 ```
 docker-compose -p phpIPAM up -d
 ```
-If we need to amend a container config in docker-compose.yml (or add an additional one), we can do so then re-run this command. Docker Compose will detect which containers are up-to-date and which require creating or re-creating. We can also remove a current container entirely and build a new one via;
+---
+
+**AMENDING THE APPLICATION**
+
+If we need to amend a particular container config in docker-compose.yml (or add an additional one), we can do so then re-run the `up` command. Docker Compose will detect which containers are up-to-date and which require creating or re-creating. 
+
+We can also remove a current container entirely and build a new one - this requires bringing the application stack `down` first via;
 
 ```
 docker-compose down && sudo docker-compose -p phpIPAM up -d
 ```
-
+If the network is currently in use by a container (e.g. the backup container is writing data to the NAS), you may recieve an error explaining that the docker-compose backing network "has active endpoints". Either wait or if absolutely needed, run the following to inspect the network, note the container names, remove the containers (ensuring volumes are present for data persistence), bring the stack down, amend docker-compose.yml, then finally bring the stack up;
+``` 
+docker volume ls
+docker network ls
+docker network inspect {NETWORK}
+docker rm -f {CONTAINER}
+docker ps -a
+docker-compose down
+nano docker-compose.yml
+docker-compose -p phpIPAM up -d
+```
 ---
 
 **TESTING**
 
 ```
 docker ps
-docker logs {CONTAINER}
+docker logs {CONTAINER} -n 40
 docker exec -it {CONTAINER} /bin/sh
 docker exec -it {CONTAINER} /bin/ash
 docker exec -it {CONTAINER} /bin/bash
 docker volume ls
+docker network ls
 ```
-
 ---

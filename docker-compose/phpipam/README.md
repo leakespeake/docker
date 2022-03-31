@@ -41,8 +41,9 @@ Aside from the usual checks, it's also a good idea to test the root MySQL passwo
 
 ```
 docker ps
-docker logs {CONTAINER}
+docker logs {CONTAINER} -n 40
 docker volume ls
+docker network ls
 
 docker exec -it {MARIADB_CONTAINER} /bin/sh
 mysql -u root -p
@@ -125,9 +126,9 @@ DB_DUMP_TARGET=smb://ubuntu:REDACTED@{NAS IP address}/backups /db
 ```
 Firstly, **user: "0"** will force the backup job to run as root (default is 'appuser') to avoid any permissions issues on local directories, seen in 'docker logs'
 
-The **smb://** target is an SMB share on a NAS device, pre-configured with the 'ubuntu' user for read/write permissions on the /backups share. Simply pass these creds in the target path as shown. For SMB use, the host vm may need **sudo apt install smbclient cifs-utils**
+The **smb://** target is an SMB share on a NAS device, pre-configured with the 'ubuntu' user for read/write permissions on the /backups share. Simply pass these creds in the target path as shown.
 
-On the host VM level, we need to mount the SMB share;
+On the host VM level, we need to mount the SMB share. Note that, for SMB use, this host VM requires **sudo apt install smbclient cifs-utils** in order for the `cifs` entry in /etc/fstab to work.
 
 ```
 sudo mkdir /media/backups
@@ -144,7 +145,7 @@ sudo nano /etc/fstab
 //{NAS IP address}/backups /media/backups cifs credentials=/home/ubuntu/.smbcredentials,iocharset=utf8 0 0		
 sudo mount -a
 ```
-Also note that we are backing up the database to a second location as well, indicated by the whitespace prior to **/db**. This /db directory is a part of our volume mount for the backup service - allowing a backup to be made locally but outside of the container. Post backup, we can view both from the host vm;
+Also note that we are backing up the database to a second location as well, indicated by the whitespace prior to **/db**. This /db directory is a part of our volume mount for the backup service - allowing a backup to be made locally but outside of the container. Post backup, we can view both from the host VM;
 
 Local
 ```
