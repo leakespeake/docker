@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    privileged: true      
+    user: root    
+    ports:
+      - 8081:8080
+      - 50000:50000
+    networks:
+      jenkins-net:
+        aliases: 
+          - jenkins-net      
+    container_name: jenkins  
+    restart: unless-stopped
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  jenkins-data:
+
+networks:
+  jenkins-net:
