@@ -1,10 +1,22 @@
 version: '3'
 
 services:
+  phpipam-haproxy:
+    image: haproxy:latest
+    ports:
+      - "443:443"
+      - "80:80"
+    restart: unless-stopped
+    volumes:
+      - phpipam-haproxy-ssl:/etc/ssl/certs                             # full-chain certificate and key file
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro            # haproxy.cfg configuration file
+    depends_on:
+      - phpipam-web
+
   phpipam-web:
     image: phpipam/phpipam-www:latest
     ports:
-      - "80:80"
+      - "8081:80"                                                      # only bind external port 80 requests to haproxy
     environment:
       - TZ=Europe/London
       - IPAM_DATABASE_HOST=phpipam-mariadb
@@ -35,10 +47,9 @@ services:
       - DB_USER=phpipam
       - DB_PASS=${IPAM_DATABASE_PASS}
       - DB_NAMES=phpipam
+      - DB_DUMP_TARGET=smb://ubuntu:N35t3d2022!@192.168.0.252/backups /db
       - DB_DUMP_FREQ=1440
       - DB_DUMP_BEGIN=2100
-      - DB_DUMP_TARGET=smb://ubuntu:REDACTED@NAS/backups /db
-#     - DB_DUMP_CRON=0 0 * * 0
     user: "0"
     restart: unless-stopped
     volumes:
@@ -58,3 +69,5 @@ volumes:
   phpipam-db-data:
   phpipam-logo:
   phpipam-db-backups:
+  phpipam-haproxy-ssl:
+  phpipam-haproxy-cfg:
