@@ -27,7 +27,7 @@ With both our Compose file (docker-compose.yml) and environment variable values 
 
 **RUNNING THE APPLICATION**
 
-We spin up the application with the single **docker-compose up** command. This does everything to get it running, including setting up the network backing so each service container can converse with one another. The **-d** flag starts the containers in the background and leaves them running whilst **-p** aids the naming convention of the seperate containers;
+We spin up the application with the single **docker-compose up -d** command. This does everything to get it running, including setting up the network backing so each service container can converse with one another. The **-d** flag starts the containers in the background and leaves them running whilst **-p** aids the naming convention of the seperate containers;
 
 ```
 docker-compose -p phpIPAM up -d
@@ -154,4 +154,38 @@ sudo ls /var/lib/docker/volumes/phpipam_phpipam-db-backups/_data
 Remote
 ```
 ls /media/backups/
+```
+
+**HAPROXY**
+
+Native SSL support can be achieved by use of HAProxy as a reverse HTTPS proxy for phpIPAM. Port binding for `0.0.0.0:80` and `0.0.0.0:443` is reserved for HAProxy (80 requests redirected to 443), whilst the phpIPAM web backend can be set to `0.0.0.0:8081` or similar. Ensure only necessary ports are opened on the firewall, i.e. tcp/8081 is denied;
+
+```
+sudo ufw allow http
+sudo ufw allow https
+sudo ufw status numbered
+```
+We specify `"8081:80"` for our phpIPAM web backend ports to ensure HAProxy can pass requests to port 80 *internally* using the Docker-compose network backing - on the **172.18.0.0/16** subnet. Source the internal IP for the web container (to state in **haproxy.cfg**) via;
+
+```
+docker network ls
+docker network inspect php-ipam_default
+curl -v 172.18.0.5:80
+```
+Assuming use of Lets Encrypt and Certbot for your SSL/TLS certificates, `fullchain.pem` and `privkey.pem` will be generated for you. These need to be combined in order for HAProxy to read them properly. Cat them together, then use OpenSSL to display all bundled certs in the file for confirmation;
+```
+cat ~/docker-compose/php-ipam/{fullchain.pem,privkey.pem} > ~/docker-compose/php-ipam/mycompany.com.pem
+while openssl x509 -text; do :; done < mycompany.com.pem
+openssl x509 -in mycompany.com.pem -text
+```
+HAProxy will load your full-chain certificate and key file mounted at `/etc/ssl/certs` inside the container, as per our Docker volumes. Just ensure you have copied the combined .pem file to the mountpoint on the host VM - in this case *"Mountpoint": "/var/lib/docker/volumes/php-ipam_phpipam-haproxy-ssl/_data"*, sourced via;
+
+```
+docker volume ls
+docker volume inspect php-ipam_phpipam-haproxy-ssl
+```
+The `haproxy.cfg` is set to be automatically copied to the container mount point via its own volume. Usual troubleshoting provided via;
+```
+docker restart {HAPROXY_CONTAINER}
+docker container logs {HAPROXY_CONTAINER}
 ```
