@@ -104,6 +104,8 @@ quit
 exit
 ```
 
+---
+
 **CRON**
 
 The hourly automatic network scans are controlled by the **SCAN_INTERVAL** value - the actual .php scripts being ran from the following directories;
@@ -115,6 +117,8 @@ cat /etc/crontabs/apache
 0 * * * * /usr/bin/php /phpipam/functions/scripts/pingCheck.php
 0 * * * * /usr/bin/php /phpipam/functions/scripts/resolveIPaddresses.php
 ```
+
+---
 
 **MYSQL-BACKUP**
 
@@ -155,6 +159,8 @@ Remote
 ```
 ls /media/backups/
 ```
+
+---
 
 **HAPROXY**
 
