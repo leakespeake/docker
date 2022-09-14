@@ -42,7 +42,7 @@ With the 2 files sat in their own project directory, we can then use docker-comp
 
 **RUNNING THE APPLICATION**
 
-We spin up the application with the single **docker-compose up** command. This does everything to get it running, including setting up the network backing so each service container can converse with one another. The **-d** flag starts the containers in the background and leaves them running whilst **-p** aids the naming convention of the seperate containers;
+We spin up the application with the single **docker-compose up -d** command. This does everything to get it running, including setting up the network backing so each service container can converse with one another. The **-d** flag starts the containers in the background and leaves them running whilst **-p** aids the naming convention of the seperate containers;
 
 ```
 docker-compose -p phpIPAM up -d
