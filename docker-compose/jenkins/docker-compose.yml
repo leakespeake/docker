@@ -1,22 +1,38 @@
 version: '3.8'
 
 services:
+
+  nginx:
+    image: nginx:latest
+    container_name: cicd-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - jenkins-net
+    volumes:
+      - ${NGINX_CONF}:/etc/nginx/conf.d/default.conf
+      - ${NGINX_SSL_CERTS}:/etc/ssl
+      - ${NGINX_LOGS}:/var/log/nginx
+
   jenkins:
     image: jenkins/jenkins:lts
-    privileged: true      
-    user: root    
+    container_name: cicd-jenkins
+    restart: unless-stopped
+    privileged: true
+    user: root
     ports:
-      - 8081:8080
-      - 50000:50000
+      - "50000:50000"
+    expose:
+      - "8080"
     networks:
       jenkins-net:
-        aliases: 
-          - jenkins-net      
-    container_name: jenkins  
-    restart: unless-stopped
+        aliases:
+          - jenkins-net
     volumes:
-      - jenkins-data:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ${JENKINS_DATA}:/var/jenkins_home
+      - ${HOST_DOCKER_SOCK}:/var/run/docker.sock
 
 volumes:
   jenkins-data:
