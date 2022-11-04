@@ -61,6 +61,8 @@ We then specify `server 172.18.0.10:8080;` in the NGINX default.conf upstream bl
 docker network ls
 docker network inspect jenkins_jenkins-net
 ```
+A better approach would be to specify the `Name` value instead of the `IPv4Address` otherwise the service will fail when it picks up a different internal Docker IP.
+
 Obviously also ensure the SSL/TLS certificates have been placed in the correct host machine directory as defined in `.env` and `{NGINX_SSL_CERTS}` - likewise for the NGINX configuration file at `{NGINX_CONF}`. These will then be copied to the right container directories upon launch.
 
 ---
@@ -87,7 +89,9 @@ Running Jenkins in Docker using the official `jenkins/jenkins:lts` image you can
 ```
 sudo docker exec ${CONTAINER_NAME} cat /var/jenkins_home/secrets/initialAdminPassword
 ```
-Jenkins is then ready to use.
+Jenkins is then ready to use - however, we need to set the `Jenkins URL` value to match that of our instance - for example; **https://jenkins-01.int.mycompany.com/** and can set this via *Manage Jenkins > Configure System... Jenkins URL*
+
+Also note that we can amend Jenkins system properties by passing the `JENKINS_JAVA_OPTS` environment values within docker-compose.yaml.
 
 ---
 

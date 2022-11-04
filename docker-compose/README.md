@@ -71,6 +71,19 @@ docker-compose -p phpIPAM up -d
 ```
 ---
 
+**BACKING NETWORK**
+
+If there have been many changes made over time to the services and networks etc, it can be helpful to prune un-used networks and re-create them, especially when you see unusual internal comms issues in the container logs. As per commands above, we can list and inspect our networks to note where our containers sit, then stop them prior to the following;
+```
+docker network prune
+docker-compose up -d --force-recreate
+```
+Note that `prune` will delete all networks that are not connected to currently active containers.
+
+Also note that container config files that reference other services by their `IPv4Address` as opposed to their `Name` value, will fail when they pick up a different internal Docker IP - these values are sourced via `docker network inspect {NETWORK}`.
+
+---
+
 **TESTING**
 
 ```
