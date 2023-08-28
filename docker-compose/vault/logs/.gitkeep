@@ -1,0 +1,1 @@
+# Location to use for writing persistent audit logs. By default nothing is written here; the 'file' audit backend must be enabled with a path under this directory as per docker-compose.yml
