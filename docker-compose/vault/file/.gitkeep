@@ -1,0 +1,1 @@
+# Location to use for writing persistent storage data when using the 'file' data storage plugin. By default nothing is written here; the 'file' data storage backend must be enabled in Vault's configuration before the container is started - as per docker-compose.yml
