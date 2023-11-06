@@ -42,13 +42,17 @@ Remember to change any sensitive values in .env to REDACTED prior to checking in
 
 **CONSIDERATIONS**
 
-- STORAGE BACKEND - for homelab purposes, the Filesystem storage backend is ample - it stores Vault's data on the filesystem using a standard directory structure - used for durable single server situations. Ensure persistence and backups are in place - Vault can be recovered quickly using (1) backend data (2) server configuration file *vault-config.json* and (3) the unseal key shares.
+- STORAGE BACKEND - for homelab purposes, the **Filesystem** storage backend is ample - it stores Vault's data on the filesystem using a standard directory structure - used for durable single server situations. Ensure persistence and backups are in place - Vault can be recovered quickly using (1) backend data (2) server configuration file *vault-config.json* and (3) the unseal key shares. *NOTE: I may migrate this to the **Consul** storage backend at a later date*
 
-- TLS ENABLEMENT - requires TLS certificate for the Vault API.
+- TLS ENABLEMENT - requires TLS certificate for the Vault API. Always ensure end-to-end TLS is configured, whether you have a load balancer in front or not.
 
 - MONITORING - will use Prometheus with a Vault exporter for metric consumption and display in Grafana.
 
 - RESILIENCY - is a load balancer or round robin DNS suitable for your use case?
+
+- TERRAFORM - this readme covers a manual setup, however it might be prudent to bring an existing Vault instance under the management of Terraform (min version 1.5) using the **import** block, to codify the management of policies, keys, engines etc - see: https://developer.hashicorp.com/vault/tutorials/operations/codify-mgmt-vault-terraform
+
+- PRODUCTION HARDENING - see here https://developer.hashicorp.com/vault/tutorials/operations/production-hardening
 
 ---
 
@@ -315,7 +319,7 @@ root
 ```
 Authentication works by verifying our identity then generating a token to associate with that identity. Within Vault, tokens map to information. The most important information mapped to a token is a set of one or more attached policies. These policies control what the token holder is allowed to do within Vault. Policies may be created (uploaded) via the CLI or via the API. To create a new policy in Vault, we have 5 steps;
 
-[1] Create our policy file within out local docker-compose directory - we'll commit this with all the other files later to version control;
+[1] Create our policy file within our local docker-compose directory - we'll commit this with all the other files later to version control;
 ```
 cd policies/
 touch vault_admins.hcl
@@ -352,25 +356,44 @@ Future Vault requests will automatically use this token until it expires - more 
 
 **REGENERATE ROOT TOKEN (WITH EXPIRATION)**
 
-Now that we have additional login options, it's best to now adhere to best practises and limit the scope slightly of the root token.
+Now that we have additional login options, it's best to adhere to best practises and limit the scope slightly of the root token.
 
-As stated, after intialilizing Vault you get a `ROOT TOKEN` as the initial way to login and configure Vault. This token can do absolutely anything in Vault and has no expiration! It's recommended to revoke it and generate a new one with expiration settings. First enter as root via `vault login` then;
+As stated, after intialilizing Vault you get a `ROOT TOKEN` as the initial way to login and configure Vault. This token can do absolutely anything in Vault and has no expiration! It's recommended to use the Vault Admin account and for root - revoke it permanently or generate a new one with expiration settings. You don't need to be authenticated to generate a new root token but Vault must be unsealed. 
+
+Either a base64-encoded **one-time-password (OTP)** or a **PGP key file** must be provided to start the root token generation. I will use OTP;
+
+First enter as root via `vault login`, revoke the existing root token then initialize a new root token generation;
 ```
 vault token revoke -self
-vault token lookup
+vault operator generate-root -init
 ```
+Nonce and one-time password (OTP) are generated - save both to a password safe! You will need the OTP value later to decode the generated root token.
 
-https://github.com/ned1313/Installing-and-Configuring-HashiCorp-Vault/blob/main/m6/1-azure_vms/3-root-token.sh
-https://developer.hashicorp.com/vault/docs/commands/operator/generate-root
-
+Add temporary unseal key exports for your terminal session - adding a leading space so they are not recorded to the bash history;
+```
+ export UNSEAL_KEY1=...
+ export UNSEAL_KEY2=...
+ export UNSEAL_KEY2=...
+```
+Then provide 3/5 unseal keys for the nonce value;
+```
+echo $UNSEAL_KEY1 | vault operator generate-root -nonce=f67f4da3-4ae4-68fb-4716-91da6b609c3e -
+echo $UNSEAL_KEY2 | vault operator generate-root -nonce=f67f4da3-4ae4-68fb-4716-91da6b609c3e -
+echo $UNSEAL_KEY3 | vault operator generate-root -nonce=f67f4da3-4ae4-68fb-4716-91da6b609c3e -
+```
+When the quorum of unseal keys are supplied, you'll get the encoded root token. Decode the encoded token using the OTP generated during the initialization;
+```
+vault operator generate-root \
+  -decode=IxJpyqxn3YafOGhqhvP6cQ== \
+  -otp=5JFQaH76Ky2TIuSt4SPvO1CGkx
+```
+The new root token appears - try and login with it via `vault login`. Done.
 
 ---
 
-**JENKINS AUTHENTICATION**
+**JENKINS INTEGRATION AND AUTHENTICATION**
 
-Here...
-
----
+This piece is covered in the **ci-cd** repository.
 
 **TROUBLESHOOTING**
 
@@ -383,4 +406,3 @@ docker network inspect vault_default
 
 vault status
 ```
-
