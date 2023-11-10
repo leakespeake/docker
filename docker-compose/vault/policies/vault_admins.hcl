@@ -19,7 +19,7 @@ path "sys/leases/*"
 }
 
 # List, create, update, and delete auth backends
-path "sys/auth"
+path "sys/auth/*"
 {
   capabilities = ["create", "read", "update", "delete", "list", "sudo"]
 }
