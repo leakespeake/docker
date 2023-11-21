@@ -18,6 +18,12 @@ path "sys/leases/*"
   capabilities = ["create", "read", "update", "delete", "list", "sudo"]
 }
 
+# Manage auth backends broadly across Vault
+path "auth/*"
+{
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}
+
 # List, create, update, and delete auth backends
 path "sys/auth/*"
 {
