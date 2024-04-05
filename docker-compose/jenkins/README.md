@@ -10,6 +10,8 @@ Jenkins and Docker Compose pair well as we need not worry about which local Java
 
 For the additional NGINX frontend service (more below), we'll use the `nginx:latest` official image. We'll handle HTTPS via this reverse proxy, and leave Jenkins in its default HTTP configuration.
 
+**NOTE (April 2024 - have moved from nginx to haproxy - updating this README soon)**
+
 ---
 
 **GETTING STARTED**
@@ -77,6 +79,20 @@ docker-compose up -d
 
 ---
 
+**UPDATING THE APPLICATION**
+
+If we need to gracefully stop Jenkins (due to host VM updates and restarts) we can take the opportunity to update Jenkins to the latest version;
+```
+ docker stop cicd-jenkins
+ docker rm cicd-jenkins
+ docker image rm jenkins/jenkins:lts
+ docker-compose up -d
+ docker ps
+ docker logs cicd-jenkins
+```
+
+---
+
 **INSTALL CONFIGURATION**
 
 Upon first launching the Jenkins controller at https://{JENKINS_URL} - you need to perform the following via the setup wizard;
@@ -119,4 +135,5 @@ docker volume ls
 docker volume inspect jenkins_jenkins-data
 docker network ls
 docker network inspect jenkins_jenkins-net
+docker restart cicd-jenkins
 ```
