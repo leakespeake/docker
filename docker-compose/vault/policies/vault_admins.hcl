@@ -12,6 +12,12 @@ path "kv2/*"
   capabilities = ["create", "read", "update", "delete", "list", "sudo"]
 }
 
+# List, create, update, and delete key/value secrets for consul
+path "consul/*"
+{
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}
+
 # Allow managing leases
 path "sys/leases/*"
 {

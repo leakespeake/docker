@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+
+  consul-server1:
+    image: hashicorp/consul:latest
+    container_name: consul-server1
+    restart: unless-stopped
+    volumes:
+     - ./config/server1.json:/consul/config/server1.json:ro
+    networks:
+      default:
+          # required for the FQDN to resolve locally on the host vm, so it can be bound by the tcp listener - for consul TLS
+          aliases:
+            - consul-prd-01.int.leakespeake.com      
+    ports:
+      - "8501:8500"       # HTTP API
+      - "8601:8600/tcp"   # DNS/tcp
+      - "8601:8600/udp"   # DNS/udp
+      - "8301:8300"       # Server RPC
+      - "8310:8301"       # Serf LAN
+
+    command: "agent -bootstrap-expect=3"
+
+  consul-server2:
+    image: hashicorp/consul:latest
+    container_name: consul-server2
+    restart: unless-stopped
+    volumes:
+     - ./config/server2.json:/consul/config/server2.json:ro
+    networks:
+      default:  
+          # required for the FQDN to resolve locally on the host vm, so it can be bound by the tcp listener - for consul TLS
+          aliases:
+            - consul-prd-01.int.leakespeake.com
+    ports:
+      - "8502:8500"       # HTTP API
+      - "8602:8600/tcp"   # DNS/tcp
+      - "8620:8600/udp"   # DNS/udp
+      - "8302:8300"       # Server RPC
+      - "8320:8301"       # Serf LAN       
+    command: "agent -bootstrap-expect=3"
+
+  consul-server3:
+    image: hashicorp/consul:latest
+    container_name: consul-server3
+    restart: unless-stopped
+    volumes:
+     - ./config/server3.json:/consul/config/server3.json:ro
+    networks:
+      default:  
+          # required for the FQDN to resolve locally on the host vm, so it can be bound by the tcp listener - for consul TLS
+          aliases:
+            - consul-prd-01.int.leakespeake.com
+    ports:
+      - "8503:8500"       # HTTP API
+      - "8603:8600/tcp"   # DNS/tcp
+      - "8603:8600/udp"   # DNS/udp
+      - "8303:8300"       # Server RPC
+      - "8330:8301"       # Serf LAN       
+    command: "agent -bootstrap-expect=3"
+
+  nginx:
+    image: nginx:latest
+    container_name: consul-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ${NGINX_CONF}:/etc/nginx/nginx.conf:ro
+      - ${NGINX_SSL_CERTS}:/etc/ssl
+      - ${NGINX_LOGS}:/var/log/nginx           
+    depends_on:
+      - consul-server1
+      - consul-server2
+      - consul-server3
